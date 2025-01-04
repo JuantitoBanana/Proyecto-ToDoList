@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.proyecto_todolist.databinding.TareaBinding
 
 
-class AdaptadorTarea(val tareas : MutableList<Tarea>) : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
+class AdaptadorTarea(val tareas : MutableList<Tarea>, private val onItemDelete: (position: Int) -> Unit ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
 
     lateinit var binding: TareaBinding
 
@@ -39,5 +39,10 @@ class AdaptadorTarea(val tareas : MutableList<Tarea>) : RecyclerView.Adapter<Rec
                 tarea.estaCompletada = false
             }
         }
+
+        binding.bBorrarTarea.setOnClickListener(){
+            onItemDelete(position)
+        }
+
     }
 }

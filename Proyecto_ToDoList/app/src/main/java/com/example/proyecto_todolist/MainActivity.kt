@@ -1,29 +1,59 @@
 package com.example.proyecto_todolist
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.room.Room
 import com.example.proyecto_todolist.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
     lateinit var binding : ActivityMainBinding
 
+    lateinit var listaTareas : MutableList<Tarea>
+    lateinit var adaptador : AdaptadorTarea
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val tarea1 = Tarea("Hacer la compra","Casa","Mañana")
-        val tarea2 = Tarea("Pasear al perro","Calle","Hoy")
-        val tarea3 = Tarea("Hacer la colada","Casa","Hoy")
+        supportActionBar?.title = "Inicio"
+        var basedatos: DataBase = Room.databaseBuilder(this, DataBase::class.java, "BDTareas").allowMainThreadQueries().build()
+        var tareaDAO: TareaDAO = basedatos.tareaDao()
 
-        var listaTareas = mutableListOf(tarea1, tarea2, tarea3)
+        val launchSecondActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val nuevaTarea = Tarea(result.data?.getStringExtra("tareaNombre")!!, result.data?.getStringExtra("tareaApartado")!!, result.data?.getStringExtra("tareaTiempo")!!)
+                tareaDAO.insertarTarea(nuevaTarea)
+                listaTareas.add(nuevaTarea)
+                binding.rvListaTareas.adapter?.notifyItemInserted(listaTareas.size-1)
+            }
+        }
 
-        binding.rvListaTareas.adapter = AdaptadorTarea(listaTareas)
+        
+        listaTareas = tareaDAO.listaTareas()
+
+        adaptador = AdaptadorTarea(listaTareas){ position: Int ->
+            tareaDAO.eliminarTarea(listaTareas.get(position))
+            listaTareas.removeAt(position)
+            adaptador.notifyItemRemoved(position)
+            adaptador.notifyItemRangeChanged(position, listaTareas.size)
+        }
+
+        binding.rvListaTareas.adapter = adaptador
         binding.rvListaTareas.layoutManager = LinearLayoutManager(this)
+
+        binding.bAniadirTarea.setOnClickListener(){
+            val intent = Intent(this, ActivityCrearTarea::class.java)
+            launchSecondActivity.launch(intent)
+
+        }
     }
 }

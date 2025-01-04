@@ -9,7 +9,7 @@ import androidx.room.Update
 @Dao
 abstract class TareaDAO {
     @Query("SELECT * FROM tareas")
-    abstract fun listaTareas():List<Tarea>
+    abstract fun listaTareas():MutableList<Tarea>
 
     @Insert
     abstract fun insertarTarea(task : Tarea)
