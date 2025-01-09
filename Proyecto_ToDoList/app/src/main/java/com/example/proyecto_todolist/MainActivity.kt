@@ -37,10 +37,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        
+
         listaTareas = tareaDAO.listaTareas()
 
-        adaptador = AdaptadorTarea(listaTareas){ position: Int ->
+        adaptador = AdaptadorTarea(listaTareas){position: Int ->
             tareaDAO.eliminarTarea(listaTareas.get(position))
             listaTareas.removeAt(position)
             adaptador.notifyItemRemoved(position)
